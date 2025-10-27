@@ -1,0 +1,2 @@
+# MAGMAxRAT
+@MAGMAxRICH
