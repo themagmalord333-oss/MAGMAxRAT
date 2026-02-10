@@ -1,0 +1,5 @@
+fastap
+uvicorn
+requests
+pymongo
+python-telegram-bot
