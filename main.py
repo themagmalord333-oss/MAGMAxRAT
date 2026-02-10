@@ -7,17 +7,27 @@ from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import requests
 
 # --- CONFIGURATION ---
-# Security ke liye inhe Environment Variables mein rakhna behtar hota hai
+# Maine aapka MongoDB Link yahan daal diya hai direct connection ke liye
+MONGO_URL = "mongodb+srv://rj5706603:O95nvJYxapyDHfkw@cluster0.fzmckei.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+
+# Aapki details
 BOT_TOKEN = "8250278558:AAHwfvIetFcU9uXgQn44kbirCrvxgD6CZ3g"
 OWNER_ID = -7727470646
-MONGO_URL = os.getenv("MONGO_URL", "mongodb+srv://admin:password@cluster0.mongodb.net/?retryWrites=true&w=majority") # Yahan apna MongoDB URL daalein agar Env Var use nahi kar rahe
+
+# URLs
 BASE_URL = "https://numb-api.vercel.app/get-info"
 MY_RENDER_URL = "https://magmaxrich.onrender.com"  # Aapka Render URL
 
 # --- DATABASE SETUP ---
-client = MongoClient(MONGO_URL)
-db = client["MagmaApiDB"]
-keys_collection = db["api_keys"]
+try:
+    client = MongoClient(MONGO_URL)
+    db = client["MagmaApiDB"]
+    keys_collection = db["api_keys"]
+    # Test connection
+    client.admin.command('ping')
+    print("✅ MongoDB Connected Successfully!")
+except Exception as e:
+    print(f"❌ MongoDB Connection Failed: {e}")
 
 app = FastAPI()
 
@@ -124,6 +134,10 @@ async def telegram_webhook(request: Request):
         print(f"Webhook Error: {e}")
     return {"status": "ok"}
 
+@app.get("/")
+def home():
+    return {"message": "Magma API is Running via MongoDB!", "status": "Active"}
+
 # --- MAIN API ENDPOINT ---
 @app.get("/{custom_name}/lookup")
 def api_lookup(custom_name: str, phone: str, key: str):
@@ -131,10 +145,10 @@ def api_lookup(custom_name: str, phone: str, key: str):
     user_data = keys_collection.find_one({"custom_name": custom_name, "api_key": key})
 
     if not user_data:
-        return {"status": "error", "msg": "Invalid API Name or Key"}
+        raise HTTPException(status_code=403, detail="Invalid API Name or Key")
 
     if user_data["used"] >= user_data["total_limit"]:
-        return {"status": "error", "msg": "Limit Expired! Buy more."}
+        raise HTTPException(status_code=403, detail="Limit Expired! Buy more.")
 
     # 2. Original API Call
     params = {"phone": phone, "apikey": "worrior"}
@@ -155,4 +169,4 @@ def api_lookup(custom_name: str, phone: str, key: str):
             "result": data
         }
     except Exception as e:
-        return {"status": "error", "msg": str(e)}
+        raise HTTPException(status_code=500, detail=str(e))
