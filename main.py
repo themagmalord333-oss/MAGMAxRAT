@@ -15,7 +15,7 @@ OWNER_ID = 7727470646
 
 # URLs
 BASE_URL = "https://numb-api.vercel.app/get-info"
-MY_RENDER_URL = "https://magmaxrich.onrender.com"
+MY_RENDER_URL = "https://magmaxrich-fnz2.onrender.com"
 
 # --- DATABASE SETUP ---
 try:
