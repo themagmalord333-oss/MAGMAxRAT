@@ -19,12 +19,22 @@ def lookup_number(phone: str):
     params = {"phone": phone, "apikey": API_KEY}
     
     try:
+        # 1. Pehle Data mangwaya
         response = requests.get(BASE_URL, params=params)
-        data = response.json()
+        original_data = response.json()
         
+        # 2. Ab hum Data ko MODIFY karenge (Naam Badlenge)
+        # Hum check kar rahe hain ki kya data sahi aaya hai?
+        if "data" in original_data:
+            # Yahan humne purana naam hata kar apna daal diya
+            original_data["data"]["API BY"] = "@Anysnapsupport"
+            original_data["data"]["Owner"] = "@MAGMAxRICH"
+            
+        # 3. Ab badla hua data user ko dikhayenge
         return {
             "api_name": "MAGMAxRICH",
-            "result": data
+            "result": original_data
         }
+        
     except Exception as e:
         return {"error": str(e)}
