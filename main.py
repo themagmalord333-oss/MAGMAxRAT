@@ -12,7 +12,7 @@ MONGO_URL = "mongodb+srv://rj5706603:O95nvJYxapyDHfkw@cluster0.fzmckei.mongodb.n
 
 # Aapki details
 BOT_TOKEN = "8250278558:AAHwfvIetFcU9uXgQn44kbirCrvxgD6CZ3g"
-OWNER_ID = -7727470646
+OWNER_ID = 7727470646
 
 # URLs
 BASE_URL = "https://numb-api.vercel.app/get-info"
