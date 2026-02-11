@@ -1,4 +1,4 @@
-import os
+import os  # <--- Maine ise theek kar diya (Small 'i')
 import secrets
 from fastapi import FastAPI, Request, HTTPException
 from pymongo import MongoClient
@@ -7,7 +7,6 @@ from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import requests
 
 # --- CONFIGURATION ---
-# Maine aapka MongoDB Link yahan daal diya hai direct connection ke liye
 MONGO_URL = "mongodb+srv://rj5706603:O95nvJYxapyDHfkw@cluster0.fzmckei.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 
 # Aapki details
@@ -16,7 +15,7 @@ OWNER_ID = 7727470646
 
 # URLs
 BASE_URL = "https://numb-api.vercel.app/get-info"
-MY_RENDER_URL = "https://magmaxrich.onrender.com"  # Aapka Render URL
+MY_RENDER_URL = "https://magmaxrich.onrender.com"
 
 # --- DATABASE SETUP ---
 try:
@@ -32,7 +31,6 @@ except Exception as e:
 app = FastAPI()
 
 # --- BOT COMMANDS ---
-
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != OWNER_ID:
         await update.message.reply_text("⛔ Sirf Owner is bot ko use kar sakta hai.")
@@ -51,7 +49,6 @@ async def generate_key(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     try:
-        # User input: /genkey king_api 100
         args = context.args
         if len(args) < 2:
             await update.message.reply_text("⚠️ Format: `/genkey <custom_name> <limit>`\nExample: `/genkey king_api 100`", parse_mode="Markdown")
@@ -59,11 +56,8 @@ async def generate_key(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         custom_name = args[0]
         limit = int(args[1])
-        
-        # Unique Key Generate karo
         api_key = secrets.token_hex(8)
 
-        # Database mein save karo
         new_entry = {
             "custom_name": custom_name,
             "api_key": api_key,
@@ -110,7 +104,7 @@ async def check_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode="Markdown"
     )
 
-# --- BOT SETUP (WEBHOOK) ---
+# --- BOT SETUP ---
 ptb_app = ApplicationBuilder().token(BOT_TOKEN).build()
 ptb_app.add_handler(CommandHandler("start", start))
 ptb_app.add_handler(CommandHandler("genkey", generate_key))
@@ -118,7 +112,6 @@ ptb_app.add_handler(CommandHandler("info", check_info))
 
 @app.on_event("startup")
 async def startup_event():
-    # Webhook set karein taaki Render par Bot chalta rahe
     webhook_url = f"{MY_RENDER_URL}/webhook"
     await ptb_app.bot.set_webhook(webhook_url)
     await ptb_app.initialize()
@@ -141,7 +134,6 @@ def home():
 # --- MAIN API ENDPOINT ---
 @app.get("/{custom_name}/lookup")
 def api_lookup(custom_name: str, phone: str, key: str):
-    # 1. Database Check
     user_data = keys_collection.find_one({"custom_name": custom_name, "api_key": key})
 
     if not user_data:
@@ -150,13 +142,11 @@ def api_lookup(custom_name: str, phone: str, key: str):
     if user_data["used"] >= user_data["total_limit"]:
         raise HTTPException(status_code=403, detail="Limit Expired! Buy more.")
 
-    # 2. Original API Call
     params = {"phone": phone, "apikey": "worrior"}
     try:
         response = requests.get(BASE_URL, params=params)
         data = response.json()
 
-        # 3. Usage Count Badhao
         keys_collection.update_one(
             {"api_key": key},
             {"$inc": {"used": 1}}
